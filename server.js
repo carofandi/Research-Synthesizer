@@ -1,5 +1,4 @@
-require('dotenv').config(require('dotenv').config({ path: '.env' });
-  );
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { fetchYouTube, fetchHN, fetchPolymarket, fetchWeb } = require('./fetchers');
@@ -13,27 +12,24 @@ app.use(express.static('public'));
 app.post('/research', async (req, res) => {
   const { query } = req.body;
   if (!query) return res.status(400).json({ error: 'Query required' });
-
   try {
-    const [ytResults, hnResults, pmResults, webResults] = await Promise.allSettled([
+    const [a, b, c, d] = await Promise.allSettled([
       fetchYouTube(query),
       fetchHN(query),
       fetchPolymarket(query),
       fetchWeb(query)
     ]);
-
-    const allResults = [ytResults, hnResults, pmResults, webResults]
+    const allResults = [a, b, c, d]
       .filter(r => r.status === 'fulfilled')
       .flatMap(r => r.value);
-
+    console.log('Results count:', allResults.length);
     const summary = await synthesize(query, allResults);
     res.json({ summary, rawResults: allResults });
-
   } catch (err) {
+    console.error('Error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(process.env.PORT, () =>
-  console.log(`Research synthesizer running on http://localhost:${process.env.PORT}`)
-);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log('Server running on port ' + PORT));

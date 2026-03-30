@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research Synthesizer</title>
+</head>
+<body>
+<h1>Research Synthesizer</h1>
+<input type="text" id="query" placeholder="Enter a research topic..." style="width:400px;padding:10px;font-size:16px"/>
+<button onclick="runResearch()" style="padding:10px 20px;font-size:16px;margin-left:10px">Research</button>
+<div id="loading" style="display:none;margin-top:20px;color:gray">Gathering signals...</div>
+<div id="error" style="display:none;margin-top:20px;color:red"></div>
+<div id="results" style="display:none;margin-top:20px;max-width:800px">
+  <h2 id="results-title"></h2>
+  <div id="summary" style="line-height:1.7;white-space:pre-wrap"></div>
+</div>
+<script>
+document.getElementById('query').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runResearch();
+});
+async function runResearch() {
+  const query = document.getElementById('query').value.trim();
+  if (!query) return;
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+  try {
+    const res = await fetch('/research', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+    const data = await res.json();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('results-title').textContent = query;
+    document.getElementById('summary').textContent = data.summary;
+    document.getElementById('results').style.display = 'block';
+  } catch (err) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('error').textContent = 'Error: ' + err.message;
+  }
+}
+</script>
+</body>
+</html>
